@@ -31,12 +31,37 @@ while True:
     l = []
     for i in medicine_list:
         j += 1
+        if('detail-row address' in str(i)):
+            addr = " ".join(i.text.split())
+            l.append(addr)
+            continue
+        if(j == 5 and ("detail-row note" in str(i))):
+            l.append("-")
+            note = " ".join(i.text.split())
+            l.append(note)
+            j = j + 1
+            continue
+        if(j == 5 and ("detail-row phone" in str(i))):
+            l.append("-")
+            l.append("-")
+            if(a.isnumeric()):
+                match_num = re.search(r'^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$', a)
+                if match_num:
+                    l.append(a)
+                    break
+        if(j == 6 and ("detail-row phone" in str(i))):
+            l.append("-")
+            if(a.isnumeric()):
+                match_num = re.search(r'^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$', a)
+                if match_num:
+                    l.append(a)
+                    break
         a = " ".join(i.text.split())
         if(a.isnumeric()):
-            match_num = re.search(r'^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$', a)
-            if match_num:
-                l.append(a)
-                break
+                match_num = re.search(r'^(\+91[\-\s]?)?[0]?(91)?[789]\d{9}$', a)
+                if match_num:
+                    l.append(a)
+                    break
         l.append(a)
         if(j % 7 == 0):
             break
@@ -50,55 +75,38 @@ while True:
 
     api = tweepy.API(auth)
 
-    
-    badge = l[0]
-    city = l[1]
-    contactName = l[2]
-    requirement = l[3]
-    address = l[4]
-    info = l[5]
-    phone = l[6]
+    try:
+        badge = l[0]
+        city = l[1]
+        contactName = l[2]
+        requirement = l[3]
+        address = l[4]
+        info = l[5]
+        phone = l[6]
 
-    if len(contactName) == 1:
-        raise Exception
+        if len(contactName) == 1:
+            raise Exception
 
-    if badge == "Supplier":
-        if phone == "Supplier" or phone == "Request":
-            tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nAddress/Info: {} \nContact No: {}".format(
-                badge, city, contactName.capitalize(), requirement, address, info)
-            print("Tweet\n"+tweet+"\n")
-            api.update_status(status=tweet)
-            print("Tweeted")
-            time.sleep(60)
-        elif info == "Supplier" or info == "Request":
-            tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nContact No: {}".format(
-                badge, city, contactName.capitalize(), requirement, address)
-            print("Tweet\n"+tweet+"\n")
-            api.update_status(status=tweet)
-            print("Tweeted")
-            time.sleep(60)
-        else:
+        if badge == "Supplier":
             tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nAddress: {} \nInfo: {}\nContact No: {}".format(
-                badge, city, contactName.capitalize(), requirement, address, info, phone)
+                    badge.strip(), city.strip(), contactName.capitalize().strip(), requirement.strip(), address.strip(), info.strip(), phone.strip())
+            if(len(tweet) > 280):
+                tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nAddress: {} \nInfo: -\nContact No: {}".format(
+                badge.strip(), city.strip(), contactName.capitalize().strip(), requirement.strip(), address.strip(), phone.strip())
             print("Tweet\n"+tweet+"\n")
             api.update_status(status=tweet)
             print("Tweeted")
-            time.sleep(60)
-    else:
-        if phone == "Request" or phone == "Supplier":
-            tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nAddress: {} \nContact No: {}".format(
-                badge, city, contactName.capitalize(), requirement, address, info)
-            print("Tweet\n"+tweet+"\n")
-            api.update_status(status=tweet)
-            print("Tweeted")
-            time.sleep(60)
+            time.sleep(30)
         else:
-            tweet = "This is a {} \nLocation: {} \nName: {} \nSupplying: {} \nAddress: {} \nInfo: {}\nContact No: {}".format(
+            tweet = "This is a {} \nLocation: {} \nName: {} \nRequirement: {} \nAddress: {} \nInfo: {}\nContact No: {}".format(
                 badge, city, contactName.capitalize(), requirement, address, info, phone)
+            if(len(tweet) > 280):
+                tweet = "This is a {} \nLocation: {} \nName: {} \nRequirement: {} \nAddress: {} \nInfo: -\nContact No: {}".format(
+                badge.strip(), city.strip(), contactName.capitalize().strip(), requirement.strip(), address.strip(), phone.strip())
             print("Tweet\n"+tweet+"\n")
             api.update_status(status=tweet)
             print("Tweeted")
-            time.sleep(60)
-    # except:
-    #     print("Error occured")
-    #     time.sleep(60)
+            time.sleep(30)
+    except:
+        print("Error occured")
+        time.sleep(60)
